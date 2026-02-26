@@ -3,6 +3,7 @@ import os
 from dotenv import load_dotenv
 from openai import OpenAI
 from mcp.client.stdio import stdio_client, StdioServerParameters
+from openai import OpenAIError
 
 # ---------------------------------------------------------
 # CONFIGURATION
@@ -59,7 +60,7 @@ async def main():
                 ai_text = response.choices[0].message.content
                 print("\nOpenAI:", ai_text)
 
-            except Exception as e:
+            except OpenAIError as e:
                 print("\n⚠ OpenAI API Error:", e)
                 continue
 

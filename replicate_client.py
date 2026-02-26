@@ -1,9 +1,9 @@
 import asyncio
+import replicate
 import os
 from dotenv import load_dotenv
-import anthropic
 from mcp.client.stdio import stdio_client, StdioServerParameters
-
+from replicate.exceptions import ReplicateError
 
 # ---------------------------------------------------------
 # CONFIGURATION
@@ -11,9 +11,7 @@ from mcp.client.stdio import stdio_client, StdioServerParameters
 
 load_dotenv()
 
-client = anthropic.Anthropic(
-    api_key=os.getenv("CLAUDE_API_KEY")
-)
+os.environ["REPLICATE_API_TOKEN"] = os.getenv("REPLICATE_API_KEY")
 
 SYSTEM_PROMPT = """
 You are an assistant controlling database tools.
@@ -24,8 +22,10 @@ Available tools:
 - insert_user_tool → Inserts user
 - get_users_tool → Returns users
 
-Respond clearly which action to take.
+Respond clearly what action should be taken.
 """
+
+MODEL = "meta/meta-llama-3-8b-instruct"
 
 # ---------------------------------------------------------
 # MAIN LOGIC
@@ -40,7 +40,7 @@ async def main():
 
     async with stdio_client(server_params) as mcp:
 
-        print("✅ Connected to MCP Server (Claude Client)")
+        print("✅ Connected to MCP Server (Replicate Client)")
 
         while True:
 
@@ -51,26 +51,25 @@ async def main():
 
             try:
 
-                response = client.messages.create(
-                    model="claude-3-haiku-20240307",  # fast + free-tier friendly
-                    max_tokens=300,
-                    messages=[
-                        {"role": "user", "content": SYSTEM_PROMPT + "\nUser: " + user_input}
-                    ]
+                output = replicate.run(
+                    MODEL,
+                    input={
+                        "prompt": SYSTEM_PROMPT + "\nUser: " + user_input
+                    }
                 )
 
-                ai_text = response.content[0].text
-                print("\nClaude:", ai_text)
+                ai_text = "".join(output)
+                print("\nLLM:", ai_text)
 
-            except anthropic.APIError as e:
-                print("\n⚠ Claude API Error:", e)
+            except ReplicateError as e:
+                print("\n⚠ Replicate API Error:", e)
                 continue
 
             # -------------------------------------------------
             # SIMPLE TOOL ROUTING
             # -------------------------------------------------
 
-            if "create" in ai_text.lower() and "table" in ai_text.lower():
+            if "create" in ai_text.lower():
 
                 result = await mcp.call_tool("create_table_tool", {})
                 print("🛠 Tool:", result)
