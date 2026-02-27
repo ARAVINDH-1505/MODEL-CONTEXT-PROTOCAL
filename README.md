@@ -259,10 +259,11 @@ This repo supports **four different LLM backends** all connecting to the same MC
 
 ```
 Claude Client   ──┐
-OpenAI Client   ──┤──► mcp_tool.py  ──► db_connector.py ──► MySQL
-Gemini Client   ──┘
+OpenAI Client   ──┤──► mcp_tool.py  ──► db_connector_for_gpt, gemini, claude.py ──► MySQL
+Gemini Client   ──┘               (which is in try-all-work branch id api key avbl)
 
 Mistral Client  ──────► mcp_server.py ──► db_connector.py ──► MySQL
+
 ```
 
 > The Mistral path uses a more robust MCP `ClientSession` pattern; the others use a simpler `stdio_client` with keyword-based routing.
