@@ -263,7 +263,7 @@ OpenAI Client   ──┤──► mcp_tool.py  ──► db_connector_for_gpt, 
 Gemini Client   ──┘               (which is in try-all-work branch id api key avbl)
 
 Mistral Client  ──────► mcp_server.py ──► db_connector.py ──► MySQL
-
+(mcp_client.py)                          (in main branch)
 ```
 
 > The Mistral path uses a more robust MCP `ClientSession` pattern; the others use a simpler `stdio_client` with keyword-based routing.
